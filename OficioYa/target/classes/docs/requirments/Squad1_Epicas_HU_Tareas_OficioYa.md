@@ -4,8 +4,7 @@
 **Squad 1:** Samuel A, Pedro A, Javier C, Juanita R.
 **Dominios a cargo:** Identity domain · Orchestrator / API Gateway · Home
 **Sprint 1** (Semana 8-9, según cronograma del proyecto)
-
-> Nota: la distribución de tareas rota entre los 4 integrantes para equilibrar la carga. Ajusten los nombres según los roles que ya asignaron (Product Owner, Líder técnico, Analista funcional, Desarrollo) — aquí se reparte por volumen de trabajo, no por rol fijo.
+    
 
 ---
 
