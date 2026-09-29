@@ -51,7 +51,7 @@ El sistema de OFICIOYA debe tener:
 |------|-------------|
 | **ID** | RF-01 |
 | **Nombre del requerimiento** | INICION DE SESIÓN  |
-| **Descripción** | El sistema debe permitir el inicio de sesión mediante usuario y contraseña, validando las credenciales contra la información de usuario gestionada por el User domain. Cada usuario debe ser unico, esto se validará por el microservicio USER DOMAIN donde deben validar esto al momento de crearla, la contraseña debe cumplir unos requisistos, si no se cumplen los requisitos , se rechazara automaticamente |
+| **Descripción** | El sistema debe permitir el inicio de sesión mediante usuario y contraseña, validando las credenciales contra la información de usuario gestionada por el User domain. Cada usuario debe ser unico, esto se validará por el microservicio USER DOMAIN donde deben validar esto al momento de crearla, la contraseña debe cumplir unos requisistos, si  se cumplen los requisitos , se revisa si la contraseña es la del usuario |
 | **Precondiciones** | Para que el sistema cumpla con este requerimiento,primero el usuario ya debio ser creado, debe ademas tener una contraseña que cumpla con los requisitos de seguridad estipulados . |
 | **Actor** |user |
 | **Flujo principal** | 1. el usuario ingresa a la aplicación 2. el usaurio ingresas sus credenciales (user y password) 3. se revisa si password ingresada cumple con los requisitos pleaneados 4. se realiza el proceso de autenticación  | 
@@ -64,8 +64,8 @@ El sistema de OFICIOYA debe tener:
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-02 |
-| **Nombre del requerimiento** | Registrar Equipo |
-| **Descripción** | El sistema debe permitir a los capitanes registrar un equipo en el torneo que se encuentre activo, ingresando la información del equipo y de sus integrantes para poder participar en el torneo junto a sus compañeros. |
+| **Nombre del requerimiento** | Rechazo inicio sesión |
+| **Descripción** | El sistema debe rechazar el inicio de sesión si la contraserña de un usuario es incorrecta o si el usuario no existe, el si se comprueba que el user no existe, se rechaza de una vez pero se si existe se comprueba si la contraseña ingresada cumple con los reuisitos, si no cumple se recahza automaticamente, si se cumple los requisitos se valida si es la contraseña y si no es se rechaza |
 | **Precondiciones** | Para que el sistema cumpla con este requerimiento, TechCup debe tener previamente un capitán autenticado con credenciales válidas (nombre de usuario y contraseña) y debe existir un torneo en estado *Active* en el cual inscribir al equipo. |
 | **Actor** | Capitán (Captain) |
 | **Flujo principal** | 1. El capitán inicia sesión en el sistema con sus credenciales.<br>2. El capitán selecciona la opción de registrar equipo.<br>3. El sistema verifica que exista un torneo en estado *Active*.<br>4. El sistema muestra el formulario de registro de equipo.<br>5. El capitán ingresa los datos del equipo (nombre, integrantes/compañeros).<br>6. El sistema valida la información ingresada.<br>7. El sistema registra el equipo y lo asocia al torneo activo.<br>8. El sistema muestra una confirmación del registro exitoso del equipo. |
