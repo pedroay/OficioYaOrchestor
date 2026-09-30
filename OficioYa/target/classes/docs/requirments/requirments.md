@@ -82,7 +82,7 @@ El sistema de OFICIOYA debe tener:
 | **Descripción** | El sistema debe aplicar una política de complejidad a las nuevas contraseñas (longitud mínima es de 12 caracters, minimo un mayuscula, un numero , un caracter especial y una minuscula). |
 | **Precondiciones** | Que haya un usuario creado y autenticado, que cumpla con el requisito que de timeout del cambio de contraseña|
 | **Actor** | Sistema |
-| **Flujo principal** | 1. El usuario ingresa una contraseña (al registrarse o cambiarla).<br>2. El sistema evalúa la longitud y caracteres.<br>3. Si no cumple, muestra mensaje de error.<br>4. Si cumple, permite continuar. |
+| **Flujo principal** | 1. El usuario ingresa una contraseña para ser cambiada.<br>2. El sistema evalúa las condiciones de seguridad de la contraseña.<br>3. Si no cumple, muestra mensaje de error.<br>4. Si cumple, permite continuar. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
 | **Poscondiciones** | *No aplica (mismas que su respectivo proceso base).* |
 
@@ -92,10 +92,10 @@ El sistema de OFICIOYA debe tener:
 |------|-------------|
 | **ID** | RF-04|
 | **Nombre del requerimiento** | Cambio de contraseña |
-| **Descripción** | El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual y que la nueva contraseña cumpla con los requisitos de seguridad establecidos , ayudandonos con el microservicio USER Domain. |
+| **Descripción** | El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual o que se realice otro proceso de autenticación , y que la nueva contraseña cumpla con los requisitos de seguridad establecidos y que sea distinta a la contraseña actual, ayudandonos con el microservicio USER Domain. |
 | **Precondiciones** | El usuario debe tener una cuenta en el sistema, con su respectivo user y password. |
-| **Actor** | Usuario autenticado |
-| **Flujo principal** | 1. El usuario accede a la opción de cambio de contraseña.<br>2. Ingresa su contraseña actual.<br>3. Ingresa su nueva contraseña.<br>4. El sistema valida la contraseña actual.<br>5. El sistema actualiza la contraseña y notifica el éxito de la operación. |
+| **Actor** | Usuario |
+| **Flujo principal** | 1. El usuario accede a la opción de cambio de contraseña.<br>2. si el usuario desea primero cambiar la contraseña ya autenticado , ingresa su contraseña actual yluego la nueva contraseña que debe cumplir con los requisitos de seguridad.<br>3. si el usuario desea cambiar la contraseña sin autenticarse primero , podra realizar otro proceso de autenticación el cual consiste en mandarle un codigo de seguridad por sms al celular registrado .<br>4. El sistema valida la contraseña nueva y si cumple con los requisitos , actualiza la contraseña y notifica el éxito de la operación. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
 | **Poscondiciones** | La contraseña se actualiza en el sistema y será requerida para el próximo inicio de sesión. |
 
@@ -105,7 +105,7 @@ El sistema de OFICIOYA debe tener:
 |------|-------------|
 | **ID** | RF-05 |
 | **Nombre del requerimiento** | Asignación de roles |
-| **Descripción** | El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador, Contratante, Administrador). |
+| **Descripción** | El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador, Administrador). |
 | **Precondiciones** | El usuario debe existir en el dominio de usuarios. |
 | **Actor** | Sistema / Administrador |
 | **Flujo principal** | 1. Se registra un nuevo usuario o se edita uno existente.<br>2. Se envían los roles deseados para el usuario.<br>3. El sistema asocia los roles seleccionados al ID del usuario en la base de datos. |
@@ -123,7 +123,7 @@ El sistema de OFICIOYA debe tener:
 | **Actor** | Sistema |
 | **Flujo principal** | 1. El usuario intenta acceder a una ruta protegida.<br>2. El sistema (API Gateway) verifica los roles en el token JWT.<br>3. Si el rol es insuficiente, rechaza la petición (403 Forbidden).<br>4. Si es correcto, permite la petición. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** | *No aplica.* |
+| **Poscondiciones** | el usuario accede a la ruta  |
 
 ### 2.7 Requerimiento Funcional 7
 
@@ -136,8 +136,7 @@ El sistema de OFICIOYA debe tener:
 | **Actor** | Sistema |
 | **Flujo principal** | 1. Credenciales validadas exitosamente.<br>2. El sistema crea el token JWT con los claims correspondientes.<br>3. El token es firmado y enviado al cliente en la respuesta. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** | *No aplica.* |
-
+| **Poscondiciones** 
 ### 2.8 Requerimiento Funcional 8
 
 | Campo | Descripción |
