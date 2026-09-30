@@ -1,0 +1,166 @@
+# 📄 Requerimientos del Microservicio
+
+## 1. Lista general de requerimientos
+
+El sistema de OFICIOYA tiene los siguientes requerimientos (descripción a alto nivel):
+
+### 1.1 Requerimientos funcionales
+
+El sistema de OFICIOYA debe tener la capacidad de:
+
+1. El sistema debe permitir el inicio de sesión mediante usuario y contraseña, validando las credenciales contra la información de usuario gestionada por el User domain.
+
+2. El sistema debe rechazar el inicio de sesión con credenciales inválidas o usuario inactivo, devolviendo un mensaje de error apropiado sin filtrar información sensible.
+
+3. El sistema debe aplicar una política de complejidad a las nuevas contraseñas (longitud mínima, combinación de caracteres).
+
+4. El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual.
+
+5. El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador, Contratante, Administrador).
+
+6. El sistema debe restringir el acceso a funcionalidades según el rol del usuario autenticado.
+
+7. Al autenticarse correctamente, el sistema debe generar un token JWT que incluya el id del usuario, sus roles y una fecha de expiración.
+
+8. El sistema debe cifrar (hash) cualquier contraseña que gestione (por ejemplo, al actualizarla) antes de persistirla o compararla.
+
+
+### 1.2 Requerimientos no funcionales
+
+El sistema de OFICIOYA debe tener:
+
+1. Seguridad: toda autenticación debe emitir y validar tokens firmados mediante JWT.
+
+2. Calidad: la cobertura mínima de pruebas unitarias debe ser del 80%.
+
+3. Logging: el servicio debe generar logs estructurados para trazabilidad y debugging.
+
+4. Las contraseñas gestionadas por el servicio deben almacenarse siempre cifradas (hash), nunca en texto plano.
+
+5. Los tokens JWT deben tener un tiempo de expiración definido y deben ser rechazados una vez vencidos.
+
+6. El servicio debe documentar sus APIs (Swagger/OpenAPI) para consumo del Orchestrator y otros squads.
+
+7. El servicio debe responder con mensajes de error genéricos ante credenciales inválidas, sin revelar si el fallo fue por usuario inexistente o contraseña incorrecta (evita enumeración de usuarios).
+
+## 2. Diagramas de caso de uso
+
+### 2.1 Requerimiento Funcional 1
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-01 |
+| **Nombre del requerimiento** | INICION DE SESIÓN  |
+| **Descripción** | El sistema debe permitir el inicio de sesión mediante usuario y contraseña, validando las credenciales contra la información de usuario gestionada por el User domain. Cada usuario debe ser unico, esto se validará por el microservicio USER DOMAIN donde deben validar esto al momento de crearla, la contraseña debe cumplir unos requisistos, si  se cumplen los requisitos , se revisa si la contraseña es la del usuario |
+| **Precondiciones** | Para que el sistema cumpla con este requerimiento,primero el usuario ya debio ser creado, debe ademas tener una contraseña que cumpla con los requisitos de seguridad estipulados . |
+| **Actor** |user |
+| **Flujo principal** | 1. el usuario ingresa a la aplicación 2. el usaurio ingresas sus credenciales (user y password) 3. se revisa si password ingresada cumple con los requisitos pleaneados 4. se realiza el proceso de autenticación  | 
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Gestión del Torneo](../uml/CaseOfUse_GestionTorneo.png) |
+| **Poscondiciones** | Se espera como resultado que el torneo haya sido creado, actualizado o que su estado haya cambiado exitosamente en el sistema, reflejando la información actualizada para todos los usuarios. |
+
+
+### 2.2 Requerimiento Funcional 2
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-02 |
+| **Nombre del requerimiento** | Rechazo inicio sesión |
+| **Descripción** | El sistema debe rechazar el inicio de sesión si la contraserña de un usuario es incorrecta o si el usuario no existe, el si se comprueba que el user no existe, se rechaza de una vez pero se si existe se comprueba si la contraseña ingresada cumple con los reuisitos, si no cumple se recahza automaticamente, si se cumple los requisitos se valida si es la contraseña y si no es se rechaza |
+| **Precondiciones** | Para que el sistema cumpla con este requerimiento, el user debe tener una cuenta con credenciales válidas (nombre de usuario y contraseña) |
+| **Actor** | User|
+| **Flujo principal** | 1. El usuario ingresa sus credencial, tanto usuario como contraseña.<br>2. El sistema revisa si la contraseña ingresada cumple con los requisitos de seguridad, si no los cumple se rechaza.<br>3. El sistema valida las credenciales ingresadas .<br>4. si son incorrectas se rechazan las credenciales y se avisa al usuario sin revelar si es el usuario o la contraseña lo que es incorrecto |
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Registrar Equipo](../uml/CaseOfUse_RegistrarEquipo.png) |
+| **Poscondiciones** | Se espera como resultado que el usuario este informado que las credenciales ingreadas estna mal y que haga las respectivas correciones |
+
+### 2.3 Requerimiento Funcional 3
+
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-03 |
+| **Nombre del requerimiento** | Política de seguridad de contraseñas |
+| **Descripción** | El sistema debe aplicar una política de complejidad a las nuevas contraseñas (longitud mínima es de 12 caracters, minimo un mayuscula, un numero , un caracter especial y una minuscula). |
+| **Precondiciones** | Que haya un usuario creado y autenticado, que cumpla con el requisito que de timeout del cambio de contraseña|
+| **Actor** | Sistema |
+| **Flujo principal** | 1. El usuario ingresa una contraseña (al registrarse o cambiarla).<br>2. El sistema evalúa la longitud y caracteres.<br>3. Si no cumple, muestra mensaje de error.<br>4. Si cumple, permite continuar. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | *No aplica (mismas que su respectivo proceso base).* |
+
+### 2.4 Requerimiento Funcional 4
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-04|
+| **Nombre del requerimiento** | Cambio de contraseña |
+| **Descripción** | El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual y que la nueva contraseña cumpla con los requisitos de seguridad establecidos , ayudandonos con el microservicio USER Domain. |
+| **Precondiciones** | El usuario debe tener una cuenta en el sistema, con su respectivo user y password. |
+| **Actor** | Usuario autenticado |
+| **Flujo principal** | 1. El usuario accede a la opción de cambio de contraseña.<br>2. Ingresa su contraseña actual.<br>3. Ingresa su nueva contraseña.<br>4. El sistema valida la contraseña actual.<br>5. El sistema actualiza la contraseña y notifica el éxito de la operación. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | La contraseña se actualiza en el sistema y será requerida para el próximo inicio de sesión. |
+
+### 2.5 Requerimiento Funcional 5
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-05 |
+| **Nombre del requerimiento** | Asignación de roles |
+| **Descripción** | El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador, Contratante, Administrador). |
+| **Precondiciones** | El usuario debe existir en el dominio de usuarios. |
+| **Actor** | Sistema / Administrador |
+| **Flujo principal** | 1. Se registra un nuevo usuario o se edita uno existente.<br>2. Se envían los roles deseados para el usuario.<br>3. El sistema asocia los roles seleccionados al ID del usuario en la base de datos. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | El usuario queda con los roles asignados, lo cual definirá sus permisos de acceso. |
+
+### 2.6 Requerimiento Funcional 6
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-06 |
+| **Nombre del requerimiento** | Restricción de acceso por rol |
+| **Descripción** | El sistema debe restringir el acceso a funcionalidades según el rol del usuario autenticado. |
+| **Precondiciones** | *No aplica (se apoya en la lógica de asignación de roles de RF-05 y el token de RF-07).* |
+| **Actor** | Sistema |
+| **Flujo principal** | 1. El usuario intenta acceder a una ruta protegida.<br>2. El sistema (API Gateway) verifica los roles en el token JWT.<br>3. Si el rol es insuficiente, rechaza la petición (403 Forbidden).<br>4. Si es correcto, permite la petición. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | *No aplica.* |
+
+### 2.7 Requerimiento Funcional 7
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-07 |
+| **Nombre del requerimiento** | Generación de token JWT |
+| **Descripción** | Al autenticarse correctamente, el sistema debe generar un token JWT que incluya el id del usuario, sus roles y una fecha de expiración. |
+| **Precondiciones** | *No aplica (se activa automáticamente tras la precondición de éxito de RF-01).* |
+| **Actor** | Sistema |
+| **Flujo principal** | 1. Credenciales validadas exitosamente.<br>2. El sistema crea el token JWT con los claims correspondientes.<br>3. El token es firmado y enviado al cliente en la respuesta. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | *No aplica.* |
+
+### 2.8 Requerimiento Funcional 8
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-08 |
+| **Nombre del requerimiento** | Cifrado de contraseñas (Hash) |
+| **Descripción** | El sistema debe cifrar (hash) cualquier contraseña que gestione antes de persistirla o compararla. |
+| **Precondiciones** | *No aplica (parte integral de RF-01 y RF-03).* |
+| **Actor** | Sistema |
+| **Flujo principal** | 1. El sistema recibe una contraseña en texto plano.<br>2. Se aplica la función de hash (ej. bcrypt).<br>3. La contraseña cifrada se almacena en base de datos o se compara con la existente. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | *No aplica.* |
+
+
+
+## 4. Mockup
+
+### Requerimiento funcional seleccionado: RF-02 — Registrar Equipo
+
+Se seleccionó el requerimiento funcional **RF-02 (Registrar Equipo)** para el diseño de los mockups:
+
+### Diseño de Mockups — Flujo de Registro de Equipo
+
+Los mockups del flujo de navegación para el registro de un equipo fueron diseñados en **Figma** y pueden consultarse en el siguiente enlace:
+
+🔗 **[Ver Mockups en Figma — Flujo de Registro de Equipo](https://www.figma.com/design/NvDN2mIs8itoVR14fFOCbU/Flujo-Registro?node-id=0-1&t=sMDkfjVEIjFY629o-1)**
