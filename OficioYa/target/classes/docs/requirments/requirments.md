@@ -12,9 +12,9 @@ El sistema de OFICIOYA debe tener la capacidad de:
 
 2. El sistema debe rechazar el inicio de sesión con credenciales inválidas o usuario inactivo, devolviendo un mensaje de error apropiado sin filtrar información sensible.
 
-3. El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual.
+3. El sistema debe aplicar una política de complejidad a las nuevas contraseñas (longitud mínima, combinación de caracteres).
 
-4. El sistema debe aplicar una política de complejidad a las nuevas contraseñas (longitud mínima, combinación de caracteres).
+4. El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual.
 
 5. El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador, Contratante, Administrador).
 
@@ -74,29 +74,30 @@ El sistema de OFICIOYA debe tener:
 
 ### 2.3 Requerimiento Funcional 3
 
+
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-03 |
-| **Nombre del requerimiento** | Cambio de contraseña |
-| **Descripción** | El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual, ayudandonos con el microservicio USER Domain. |
-| **Precondiciones** | El usuario debe tener una cuenta en el sistema, con su respectivo user y password. |
-| **Actor** | Usuario autenticado |
-| **Flujo principal** | 1. El usuario accede a la opción de cambio de contraseña.<br>2. Ingresa su contraseña actual.<br>3. Ingresa su nueva contraseña.<br>4. El sistema valida la contraseña actual.<br>5. El sistema actualiza la contraseña y notifica el éxito de la operación. |
+| **Nombre del requerimiento** | Política de seguridad de contraseñas |
+| **Descripción** | El sistema debe aplicar una política de complejidad a las nuevas contraseñas (longitud mínima es de 12 caracters, minimo un mayuscula, un numero , un caracter especial y una minuscula). |
+| **Precondiciones** | Que haya un usuario creado y autenticado, que cumpla con el requisito que de timeout del cambio de contraseña|
+| **Actor** | Sistema |
+| **Flujo principal** | 1. El usuario ingresa una contraseña (al registrarse o cambiarla).<br>2. El sistema evalúa la longitud y caracteres.<br>3. Si no cumple, muestra mensaje de error.<br>4. Si cumple, permite continuar. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** | La contraseña se actualiza en el sistema y será requerida para el próximo inicio de sesión. |
+| **Poscondiciones** | *No aplica (mismas que su respectivo proceso base).* |
 
 ### 2.4 Requerimiento Funcional 4
 
 | Campo | Descripción |
 |------|-------------|
-| **ID** | RF-04 |
-| **Nombre del requerimiento** | Política de cifrado de contraseñas |
-| **Descripción** | El sistema debe aplicar una política de complejidad a las nuevas contraseñas (longitud mínima, combinación de caracteres). |
-| **Precondiciones** | *No aplica (complementario a la lógica de RF-01 y RF-03, la validación se da al ingresar una nueva contraseña).* |
-| **Actor** | Usuario |
-| **Flujo principal** | 1. El usuario ingresa una contraseña (al registrarse o cambiarla).<br>2. El sistema evalúa la longitud y caracteres.<br>3. Si no cumple, muestra mensaje de error.<br>4. Si cumple, permite continuar. |
+| **ID** | RF-04|
+| **Nombre del requerimiento** | Cambio de contraseña |
+| **Descripción** | El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual y que la nueva contraseña cumpla con los requisitos de seguridad establecidos , ayudandonos con el microservicio USER Domain. |
+| **Precondiciones** | El usuario debe tener una cuenta en el sistema, con su respectivo user y password. |
+| **Actor** | Usuario autenticado |
+| **Flujo principal** | 1. El usuario accede a la opción de cambio de contraseña.<br>2. Ingresa su contraseña actual.<br>3. Ingresa su nueva contraseña.<br>4. El sistema valida la contraseña actual.<br>5. El sistema actualiza la contraseña y notifica el éxito de la operación. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** | *No aplica (mismas que su respectivo proceso base).* |
+| **Poscondiciones** | La contraseña se actualiza en el sistema y será requerida para el próximo inicio de sesión. |
 
 ### 2.5 Requerimiento Funcional 5
 
