@@ -66,24 +66,89 @@ El sistema de OFICIOYA debe tener:
 | **ID** | RF-02 |
 | **Nombre del requerimiento** | Rechazo inicio sesión |
 | **Descripción** | El sistema debe rechazar el inicio de sesión si la contraserña de un usuario es incorrecta o si el usuario no existe, el si se comprueba que el user no existe, se rechaza de una vez pero se si existe se comprueba si la contraseña ingresada cumple con los reuisitos, si no cumple se recahza automaticamente, si se cumple los requisitos se valida si es la contraseña y si no es se rechaza |
-| **Precondiciones** | Para que el sistema cumpla con este requerimiento, TechCup debe tener previamente un capitán autenticado con credenciales válidas (nombre de usuario y contraseña) y debe existir un torneo en estado *Active* en el cual inscribir al equipo. |
-| **Actor** | Capitán (Captain) |
-| **Flujo principal** | 1. El capitán inicia sesión en el sistema con sus credenciales.<br>2. El capitán selecciona la opción de registrar equipo.<br>3. El sistema verifica que exista un torneo en estado *Active*.<br>4. El sistema muestra el formulario de registro de equipo.<br>5. El capitán ingresa los datos del equipo (nombre, integrantes/compañeros).<br>6. El sistema valida la información ingresada.<br>7. El sistema registra el equipo y lo asocia al torneo activo.<br>8. El sistema muestra una confirmación del registro exitoso del equipo. |
+| **Precondiciones** | Para que el sistema cumpla con este requerimiento, el user debe tener una cuenta con credenciales válidas (nombre de usuario y contraseña) |
+| **Actor** | User|
+| **Flujo principal** | 1. El usuario ingresa sus credencial, tanto usuario como contraseña.<br>2. El sistema revisa si la contraseña ingresada cumple con los requisitos de seguridad, si no los cumple se rechaza.<br>3. El sistema valida las credenciales ingresadas .<br>4. si son incorrectas se rechazan las credenciales y se avisa al usuario sin revelar si es el usuario o la contraseña lo que es incorrecto |
 | **Diagrama de caso de uso** | ![Diagrama de caso de uso - Registrar Equipo](../uml/CaseOfUse_RegistrarEquipo.png) |
-| **Poscondiciones** | Se espera como resultado que el equipo quede registrado e inscrito exitosamente en el torneo activo, siendo visible para los organizadores y demás usuarios del sistema. |
+| **Poscondiciones** | Se espera como resultado que el usuario este informado que las credenciales ingreadas estna mal y que haga las respectivas correciones |
 
 ### 2.3 Requerimiento Funcional 3
 
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-03 |
-| **Nombre del requerimiento** | Pagar Inscripción del Torneo |
-| **Descripción** | El sistema debe permitir a los capitanes realizar el pago de la inscripción de su equipo en el torneo a través de la pasarela de pagos PSE, para quedar registrados formalmente y poder participar en el torneo. |
-| **Precondiciones** | Para que el sistema cumpla con este requerimiento, TechCup debe tener previamente un capitán autenticado con credenciales válidas, un equipo registrado en el torneo activo y la integración con el sistema externo PSE disponible para procesar la transacción. |
-| **Actor** | Capitán (Captain) |
-| **Flujo principal** | 1. El capitán inicia sesión en el sistema con sus credenciales.<br>2. El capitán selecciona la opción de pagar la inscripción del torneo.<br>3. El sistema muestra los detalles del pago (tarifa de inscripción, equipo asociado, torneo).<br>4. El capitán confirma el pago.<br>5. El sistema redirige al capitán a la pasarela de pagos PSE.<br>6. El capitán completa la transacción en PSE.<br>7. PSE notifica al sistema el resultado de la transacción (aprobada/rechazada).<br>8. El sistema actualiza el estado de pago del equipo.<br>9. El sistema muestra una confirmación del pago realizado al capitán. |
-| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Pagar Inscripción](../uml/CaseOfUse_PagarTorneo.png) |
-| **Poscondiciones** | Se espera como resultado que el pago de la inscripción quede registrado exitosamente en el sistema, el equipo quede formalmente inscrito en el torneo y el comprobante de pago esté disponible para consulta y validación por parte de los organizadores. |
+| **Nombre del requerimiento** | Cambio de contraseña |
+| **Descripción** | El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual, ayudandonos con el microservicio USER Domain. |
+| **Precondiciones** | El usuario debe tener una cuenta en el sistema, con su respectivo user y password. |
+| **Actor** | Usuario autenticado |
+| **Flujo principal** | 1. El usuario accede a la opción de cambio de contraseña.<br>2. Ingresa su contraseña actual.<br>3. Ingresa su nueva contraseña.<br>4. El sistema valida la contraseña actual.<br>5. El sistema actualiza la contraseña y notifica el éxito de la operación. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | La contraseña se actualiza en el sistema y será requerida para el próximo inicio de sesión. |
+
+### 2.4 Requerimiento Funcional 4
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-04 |
+| **Nombre del requerimiento** | Política de cifrado de contraseñas |
+| **Descripción** | El sistema debe aplicar una política de complejidad a las nuevas contraseñas (longitud mínima, combinación de caracteres). |
+| **Precondiciones** | *No aplica (complementario a la lógica de RF-01 y RF-03, la validación se da al ingresar una nueva contraseña).* |
+| **Actor** | Usuario |
+| **Flujo principal** | 1. El usuario ingresa una contraseña (al registrarse o cambiarla).<br>2. El sistema evalúa la longitud y caracteres.<br>3. Si no cumple, muestra mensaje de error.<br>4. Si cumple, permite continuar. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | *No aplica (mismas que su respectivo proceso base).* |
+
+### 2.5 Requerimiento Funcional 5
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-05 |
+| **Nombre del requerimiento** | Asignación de roles |
+| **Descripción** | El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador, Contratante, Administrador). |
+| **Precondiciones** | El usuario debe existir en el dominio de usuarios. |
+| **Actor** | Sistema / Administrador |
+| **Flujo principal** | 1. Se registra un nuevo usuario o se edita uno existente.<br>2. Se envían los roles deseados para el usuario.<br>3. El sistema asocia los roles seleccionados al ID del usuario en la base de datos. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | El usuario queda con los roles asignados, lo cual definirá sus permisos de acceso. |
+
+### 2.6 Requerimiento Funcional 6
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-06 |
+| **Nombre del requerimiento** | Restricción de acceso por rol |
+| **Descripción** | El sistema debe restringir el acceso a funcionalidades según el rol del usuario autenticado. |
+| **Precondiciones** | *No aplica (se apoya en la lógica de asignación de roles de RF-05 y el token de RF-07).* |
+| **Actor** | Sistema |
+| **Flujo principal** | 1. El usuario intenta acceder a una ruta protegida.<br>2. El sistema (API Gateway) verifica los roles en el token JWT.<br>3. Si el rol es insuficiente, rechaza la petición (403 Forbidden).<br>4. Si es correcto, permite la petición. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | *No aplica.* |
+
+### 2.7 Requerimiento Funcional 7
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-07 |
+| **Nombre del requerimiento** | Generación de token JWT |
+| **Descripción** | Al autenticarse correctamente, el sistema debe generar un token JWT que incluya el id del usuario, sus roles y una fecha de expiración. |
+| **Precondiciones** | *No aplica (se activa automáticamente tras la precondición de éxito de RF-01).* |
+| **Actor** | Sistema |
+| **Flujo principal** | 1. Credenciales validadas exitosamente.<br>2. El sistema crea el token JWT con los claims correspondientes.<br>3. El token es firmado y enviado al cliente en la respuesta. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | *No aplica.* |
+
+### 2.8 Requerimiento Funcional 8
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-08 |
+| **Nombre del requerimiento** | Cifrado de contraseñas (Hash) |
+| **Descripción** | El sistema debe cifrar (hash) cualquier contraseña que gestione antes de persistirla o compararla. |
+| **Precondiciones** | *No aplica (parte integral de RF-01 y RF-03).* |
+| **Actor** | Sistema |
+| **Flujo principal** | 1. El sistema recibe una contraseña en texto plano.<br>2. Se aplica la función de hash (ej. bcrypt).<br>3. La contraseña cifrada se almacena en base de datos o se compara con la existente. |
+| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
+| **Poscondiciones** | *No aplica.* |
 
 
 
