@@ -16,7 +16,7 @@ El sistema de OFICIOYA debe tener la capacidad de:
 
 4. El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual.
 
-5. El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador, Contratante, Administrador).
+5. El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Client/Worker/Administrator).
 
 6. El sistema debe restringir el acceso a funcionalidades según el rol del usuario autenticado.
 
@@ -50,13 +50,13 @@ El sistema de OFICIOYA debe tener:
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-01 |
-| **Nombre del requerimiento** | INICION DE SESIÓN  |
-| **Descripción** | El sistema debe permitir el inicio de sesión mediante usuario y contraseña, validando las credenciales contra la información de usuario gestionada por el User domain. Cada usuario debe ser unico, esto se validará por el microservicio USER DOMAIN donde deben validar esto al momento de crearla, la contraseña debe cumplir unos requisistos, si  se cumplen los requisitos , se revisa si la contraseña es la del usuario |
-| **Precondiciones** | Para que el sistema cumpla con este requerimiento,primero el usuario ya debio ser creado, debe ademas tener una contraseña que cumpla con los requisitos de seguridad estipulados . |
-| **Actor** |user |
-| **Flujo principal** | 1. el usuario ingresa a la aplicación 2. el usaurio ingresas sus credenciales (user y password) 3. se revisa si password ingresada cumple con los requisitos pleaneados 4. se realiza el proceso de autenticación  | 
-| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Gestión del Torneo](../uml/CaseOfUse_GestionTorneo.png) |
-| **Poscondiciones** | Se espera como resultado que el torneo haya sido creado, actualizado o que su estado haya cambiado exitosamente en el sistema, reflejando la información actualizada para todos los usuarios. |
+| **Nombre del requerimiento** | INICIO DE SESIÓN  |
+| **Descripción** | El sistema debe permitir el inicio de sesión mediante usuario y contraseña, validando las credenciales contra la información de usuario gestionada por el User domain. Cada usuario debe ser único, esto se validará por el microservicio USER DOMAIN donde deben validar esto al momento de crearla, la contraseña debe cumplir unos requisitos, si  se cumplen los requisitos , se revisa si la contraseña es la del usuario |
+| **Precondiciones** | Para que el sistema cumpla con este requerimiento,primero el usuario ya debió haber sido creado, debe además tener una contraseña que cumpla con los requisitos de seguridad estipulados. |
+| **Actor** |Client/Worker/Administrator  |
+| **Flujo principal** | 1. El usuario ingresa a la aplicación<br>2. El usuario ingresa sus credenciales (user y password)<br>3. Se revisa si la contraseña ingresada cumple con los requisitos establecidos<br>4. Se realiza el proceso de autenticación.<br>5. Si las credenciales son válidas, el sistema genera un token JWT.<br>6. Si las credenciales son inválidas, el sistema rechaza el inicio de sesión. |
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - inicio de sesion](../images/iniciarSesion.png) |
+| **Postcondiciones** | Se espera como resultado que el usuario se haya autenticado exitosamente en el sistema, reflejando la información actualizada para todos los usuarios. |
 
 
 ### 2.2 Requerimiento Funcional 2
@@ -65,12 +65,12 @@ El sistema de OFICIOYA debe tener:
 |------|-------------|
 | **ID** | RF-02 |
 | **Nombre del requerimiento** | Rechazo inicio sesión |
-| **Descripción** | El sistema debe rechazar el inicio de sesión si la contraserña de un usuario es incorrecta o si el usuario no existe, el si se comprueba que el user no existe, se rechaza de una vez pero se si existe se comprueba si la contraseña ingresada cumple con los reuisitos, si no cumple se recahza automaticamente, si se cumple los requisitos se valida si es la contraseña y si no es se rechaza |
+| **Descripción** | El sistema debe rechazar el inicio de sesión si la contraseña de un usuario es incorrecta o si el usuario no existe, si se comprueba que el user no existe, se rechaza de una vez, pero si existe se comprueba si la contraseña ingresada cumple con los requisitos, si no cumple se recahza automaticamente, si se cumple los requisitos se valida si es la contraseña y si no es se rechaza |
 | **Precondiciones** | Para que el sistema cumpla con este requerimiento, el user debe tener una cuenta con credenciales válidas (nombre de usuario y contraseña) |
-| **Actor** | User|
+| **Actor** | Sistema|
 | **Flujo principal** | 1. El usuario ingresa sus credencial, tanto usuario como contraseña.<br>2. El sistema revisa si la contraseña ingresada cumple con los requisitos de seguridad, si no los cumple se rechaza.<br>3. El sistema valida las credenciales ingresadas .<br>4. si son incorrectas se rechazan las credenciales y se avisa al usuario sin revelar si es el usuario o la contraseña lo que es incorrecto |
-| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Registrar Equipo](../uml/CaseOfUse_RegistrarEquipo.png) |
-| **Poscondiciones** | Se espera como resultado que el usuario este informado que las credenciales ingreadas estna mal y que haga las respectivas correciones |
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Rechazo inicio sesion](../images/rechazoInicioSesion.png) |
+| **Postcondiciones** | Se espera como resultado que el usuario este informado que las credenciales ingreadas estna mal y que haga las respectivas correciones |
 
 ### 2.3 Requerimiento Funcional 3
 
@@ -84,7 +84,7 @@ El sistema de OFICIOYA debe tener:
 | **Actor** | Sistema |
 | **Flujo principal** | 1. El usuario ingresa una contraseña para ser cambiada.<br>2. El sistema evalúa las condiciones de seguridad de la contraseña.<br>3. Si no cumple, muestra mensaje de error.<br>4. Si cumple, permite continuar. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** | *No aplica (mismas que su respectivo proceso base).* |
+| **Postcondiciones** | *No aplica (mismas que su respectivo proceso base).* |
 
 ### 2.4 Requerimiento Funcional 4
 
@@ -97,7 +97,7 @@ El sistema de OFICIOYA debe tener:
 | **Actor** | Usuario |
 | **Flujo principal** | 1. El usuario accede a la opción de cambio de contraseña.<br>2. si el usuario desea primero cambiar la contraseña ya autenticado , ingresa su contraseña actual yluego la nueva contraseña que debe cumplir con los requisitos de seguridad.<br>3. si el usuario desea cambiar la contraseña sin autenticarse primero , podra realizar otro proceso de autenticación el cual consiste en mandarle un codigo de seguridad por sms al celular registrado .<br>4. El sistema valida la contraseña nueva y si cumple con los requisitos , actualiza la contraseña y notifica el éxito de la operación. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** | La contraseña se actualiza en el sistema y será requerida para el próximo inicio de sesión. |
+| **Postcondiciones** | La contraseña se actualiza en el sistema y será requerida para el próximo inicio de sesión. |
 
 ### 2.5 Requerimiento Funcional 5
 
@@ -105,12 +105,12 @@ El sistema de OFICIOYA debe tener:
 |------|-------------|
 | **ID** | RF-05 |
 | **Nombre del requerimiento** | Asignación de roles |
-| **Descripción** | El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador, Administrador). |
+| **Descripción** | El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador,Contratante, Administrador). |
 | **Precondiciones** | El usuario debe existir en el dominio de usuarios. |
 | **Actor** | Sistema / Administrador |
-| **Flujo principal** | 1. Se registra un nuevo usuario o se edita uno existente.<br>2. Se envían los roles deseados para el usuario.<br>3. El sistema asocia los roles seleccionados al ID del usuario en la base de datos. |
+| **Flujo principal** | 1.1. Se registra un nuevo usuario .<br>1.2. Se le asignan los roles al usuario nuevo (puede ser trabajador y/o contratante).<br>1.3. El sistema asocia los roles seleccionados al ID del usuario en la base de datos. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** | El usuario queda con los roles asignados, lo cual definirá sus permisos de acceso. |
+| **Postcondiciones** | El usuario queda con los roles asignados, lo cual definirá sus permisos de acceso. |
 
 ### 2.6 Requerimiento Funcional 6
 
@@ -123,7 +123,7 @@ El sistema de OFICIOYA debe tener:
 | **Actor** | Sistema |
 | **Flujo principal** | 1. El usuario intenta acceder a una ruta protegida.<br>2. El sistema (API Gateway) verifica los roles en el token JWT.<br>3. Si el rol es insuficiente, rechaza la petición (403 Forbidden).<br>4. Si es correcto, permite la petición. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** | el usuario accede a la ruta  |
+| **Postcondiciones** | el usuario accede a la ruta  |
 
 ### 2.7 Requerimiento Funcional 7
 
@@ -136,7 +136,7 @@ El sistema de OFICIOYA debe tener:
 | **Actor** | Sistema |
 | **Flujo principal** | 1. Credenciales validadas exitosamente.<br>2. El sistema crea el token JWT con los claims correspondientes.<br>3. El token es firmado y enviado al cliente en la respuesta. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** 
+| **Postcondiciones** 
 ### 2.8 Requerimiento Funcional 8
 
 | Campo | Descripción |
@@ -148,18 +148,6 @@ El sistema de OFICIOYA debe tener:
 | **Actor** | Sistema |
 | **Flujo principal** | 1. El sistema recibe una contraseña en texto plano.<br>2. Se aplica la función de hash (ej. bcrypt).<br>3. La contraseña cifrada se almacena en base de datos o se compara con la existente. |
 | **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Poscondiciones** | *No aplica.* |
+| **Postcondiciones** | *No aplica.* |
 
 
-
-## 4. Mockup
-
-### Requerimiento funcional seleccionado: RF-02 — Registrar Equipo
-
-Se seleccionó el requerimiento funcional **RF-02 (Registrar Equipo)** para el diseño de los mockups:
-
-### Diseño de Mockups — Flujo de Registro de Equipo
-
-Los mockups del flujo de navegación para el registro de un equipo fueron diseñados en **Figma** y pueden consultarse en el siguiente enlace:
-
-🔗 **[Ver Mockups en Figma — Flujo de Registro de Equipo](https://www.figma.com/design/NvDN2mIs8itoVR14fFOCbU/Flujo-Registro?node-id=0-1&t=sMDkfjVEIjFY629o-1)**
