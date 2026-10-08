@@ -37,7 +37,7 @@ El sistema de OFICIOYA debe tener:
 
 4. Las contraseñas gestionadas por el servicio deben almacenarse siempre cifradas (hash), nunca en texto plano.
 
-5. Los tokens JWT deben tener un tiempo de expiración definido y deben ser rechazados una vez vencidos.
+5. Los tokens JWT deben tener un tiempo de expiración definido y deben ser rechazados una vez vencidos (Este tiempo es de 30 minutos).
 
 6. El servicio debe documentar sus APIs (Swagger/OpenAPI) para consumo del Orchestrator y otros squads.
 
@@ -52,9 +52,9 @@ El sistema de OFICIOYA debe tener:
 | **ID** | RF-01 |
 | **Nombre del requerimiento** | INICIO DE SESIÓN  |
 | **Descripción** | El sistema debe permitir el inicio de sesión mediante usuario y contraseña, validando las credenciales contra la información de usuario gestionada por el User domain. Cada usuario debe ser único, esto se validará por el microservicio USER DOMAIN donde deben validar esto al momento de crearla, la contraseña debe cumplir unos requisitos, si  se cumplen los requisitos , se revisa si la contraseña es la del usuario |
-| **Precondiciones** | Para que el sistema cumpla con este requerimiento,primero el usuario ya debió haber sido creado, debe además tener una contraseña que cumpla con los requisitos de seguridad estipulados. |
+| **Precondiciones** |  1) El usuario ya debe existir en OficioYa, 2) El usuario debe tener una contraseña que cumpla con los requisitos de seguridad estipulados. |
 | **Actor** |Client/Worker/Administrator  |
-| **Flujo principal** | 1. El usuario ingresa a la aplicación<br>2. El usuario ingresa sus credenciales (user y password)<br>3. Se revisa si la contraseña ingresada cumple con los requisitos establecidos<br>4. Se realiza el proceso de autenticación.<br>5. Si las credenciales son válidas, el sistema genera un token JWT.<br>6. Si las credenciales son inválidas, el sistema rechaza el inicio de sesión. |
+| **Flujo principal** | 1. El usuario ingresa a la aplicación<br>2. El usuario ingresa sus credenciales (usuario y contraseña)<br>3. La aplicación revisa si la contraseña ingresada coincide con la contraseña definida en el proceso de registro<br>4. Se realiza el proceso de autenticación.<br>5.Si el usuario y contraseña son correctos, se dirige a la pantalla de inicio (_home_) de OficioYa. |
 | **Diagrama de caso de uso** | ![Diagrama de caso de uso - inicio de sesion](../images/iniciarSesion.png) |
 | **Postcondiciones** | Se espera como resultado que el usuario se haya autenticado exitosamente en el sistema, reflejando la información actualizada para todos los usuarios. |
 
@@ -65,12 +65,12 @@ El sistema de OFICIOYA debe tener:
 |------|-------------|
 | **ID** | RF-02 |
 | **Nombre del requerimiento** | Rechazo inicio sesión |
-| **Descripción** | El sistema debe rechazar el inicio de sesión si la contraseña de un usuario es incorrecta o si el usuario no existe, si se comprueba que el user no existe, se rechaza de una vez, pero si existe se comprueba si la contraseña ingresada cumple con los requisitos, si no cumple se recahza automaticamente, si se cumple los requisitos se valida si es la contraseña y si no es se rechaza |
+| **Descripción** | El sistema debe rechazar el inicio de sesión si la contraseña de un usuario es incorrecta o si el usuario no existe, si se comprueba que el user no existe, se rechaza, pero si existe se comprueba si la contraseña ingresada cumple con los requisitos, si no cumple se rechaza automaticamente, si se cumple los requisitos se valida si es la contraseña y si no es se rechaza |
 | **Precondiciones** | Para que el sistema cumpla con este requerimiento, el user debe tener una cuenta con credenciales válidas (nombre de usuario y contraseña) |
 | **Actor** | Sistema|
-| **Flujo principal** | 1. El usuario ingresa sus credencial, tanto usuario como contraseña.<br>2. El sistema revisa si la contraseña ingresada cumple con los requisitos de seguridad, si no los cumple se rechaza.<br>3. El sistema valida las credenciales ingresadas .<br>4. si son incorrectas se rechazan las credenciales y se avisa al usuario sin revelar si es el usuario o la contraseña lo que es incorrecto |
+| **Flujo principal** | 1. El usuario ingresa sus credenciales, tanto usuario como contraseña.<br>2. El sistema verifica si el usuario existe; si no existe, rechaza el acceso inmediatamente.<br>3. Si el usuario existe, el sistema revisa si la contraseña ingresada cumple con los requisitos de seguridad; si no los cumple, se rechaza automáticamente.<br>4. Si la contraseña cumple los requisitos, el sistema valida si corresponde al usuario; si no corresponde, se rechaza el acceso.<br>5. En cualquier caso de rechazo, el sistema muestra el mensaje de error genérico: *"Usuario o contraseña incorrectos, por favor rectifique sus credenciales."* (el mensaje no revela cuál de los dos datos es el incorrecto). |
 | **Diagrama de caso de uso** | ![Diagrama de caso de uso - Rechazo inicio sesion](../images/rechazoInicioSesion.png) |
-| **Postcondiciones** | Se espera como resultado que el usuario este informado que las credenciales ingreadas estna mal y que haga las respectivas correciones |
+| **Postcondiciones** | Se espera como resultado que el usuario esté informado de que sus credenciales son incorrectas y que realice las respectivas correcciones. |
 
 ### 2.3 Requerimiento Funcional 3
 
@@ -78,13 +78,13 @@ El sistema de OFICIOYA debe tener:
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-03 |
-| **Nombre del requerimiento** | Política de seguridad de contraseñas |
-| **Descripción** | El sistema debe aplicar una política de complejidad a las nuevas contraseñas (longitud mínima es de 12 caracters, minimo un mayuscula, un numero , un caracter especial y una minuscula). |
-| **Precondiciones** | Que haya un usuario creado y autenticado, que cumpla con el requisito que de timeout del cambio de contraseña|
-| **Actor** | Sistema |
-| **Flujo principal** | 1. El usuario ingresa una contraseña para ser cambiada.<br>2. El sistema evalúa las condiciones de seguridad de la contraseña.<br>3. Si no cumple, muestra mensaje de error.<br>4. Si cumple, permite continuar. |
-| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Postcondiciones** | *No aplica (mismas que su respectivo proceso base).* |
+| **Nombre del requerimiento** | Visualización y validación de política de contraseñas |
+| **Descripción** | El sistema debe mostrar y validar la política de contraseñas en las pantallas de **registro de usuario** y de **cambio de contraseña**, garantizando que toda contraseña ingresada cumpla con: longitud mínima de 12 caracteres, al menos una mayúscula, al menos un número, al menos un carácter especial y al menos una minúscula. |
+| **Precondiciones** | El usuario no se ha registrado previamente **o** el usuario ya está registrado y desea cambiar su contraseña. |
+| **Actor** |Client/Worker/Administrator|
+| **Flujo principal** | **Escenario A – Registro:**<br>1. El usuario accede a la pantalla de registro.<br>2. El sistema muestra en pantalla los requisitos de la política de contraseñas.<br>3. El usuario ingresa una contraseña.<br>4. El sistema valida en tiempo real el cumplimiento de los requisitos.<br>5. Si no cumple, muestra mensaje de error indicando qué requisito falla.<br>6. Si cumple, habilita continuar con el registro.<br><br>**Escenario B – Cambio de contraseña:**<br>1. El usuario accede a la pantalla de cambio de contraseña.<br>2. El sistema muestra en pantalla los requisitos de la política de contraseñas.<br>3. El usuario ingresa la nueva contraseña.<br>4. El sistema valida que cumpla con los requisitos y que sea distinta a la actual.<br>5. Si no cumple, muestra mensaje de error indicando qué requisito falla.<br>6. Si cumple, habilita continuar con el cambio. |
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Visualización y validación de política de contraseñas](../images/visualizacionContraseña.png) |
+| **Postcondiciones** | La contraseña ingresada cumple con la política de seguridad del sistema y queda lista para ser procesada por el flujo base (RF-01 o RF-04 según corresponda). |
 
 ### 2.4 Requerimiento Funcional 4
 
