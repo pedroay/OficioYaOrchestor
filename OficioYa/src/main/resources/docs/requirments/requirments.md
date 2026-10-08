@@ -16,13 +16,15 @@ El sistema de OFICIOYA debe tener la capacidad de:
 
 4. El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual.
 
-5. El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Client/Worker/Administrator).
+5. El sistema debe permitir a un usuario cambiar su contraseña desde la página inicial de oficio ya
 
-6. El sistema debe restringir el acceso a funcionalidades según el rol del usuario autenticado.
+6. El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Client/Worker/Administrator).
 
-7. Al autenticarse correctamente, el sistema debe generar un token JWT que incluya el id del usuario, sus roles y una fecha de expiración.
+7. El sistema debe restringir el acceso a funcionalidades según el rol del usuario autenticado.
 
-8. El sistema debe cifrar (hash) cualquier contraseña que gestione (por ejemplo, al actualizarla) antes de persistirla o compararla.
+8. Al autenticarse correctamente, el sistema debe generar un token JWT que incluya el id del usuario, sus roles y una fecha de expiración.
+
+9. El sistema debe cifrar (hash) cualquier contraseña que gestione (por ejemplo, al actualizarla) antes de persistirla o compararla.
 
 
 ### 1.2 Requerimientos no funcionales
@@ -90,58 +92,71 @@ El sistema de OFICIOYA debe tener:
 
 | Campo | Descripción |
 |------|-------------|
-| **ID** | RF-04|
-| **Nombre del requerimiento** | Cambio de contraseña |
-| **Descripción** | El sistema debe permitir a un usuario autenticado cambiar su contraseña, validando previamente su contraseña actual o que se realice otro proceso de autenticación , y que la nueva contraseña cumpla con los requisitos de seguridad establecidos y que sea distinta a la contraseña actual, ayudandonos con el microservicio USER Domain. |
-| **Precondiciones** | El usuario debe tener una cuenta en el sistema, con su respectivo user y password. |
-| **Actor** | Usuario |
-| **Flujo principal** | 1. El usuario accede a la opción de cambio de contraseña.<br>2. si el usuario desea primero cambiar la contraseña ya autenticado , ingresa su contraseña actual yluego la nueva contraseña que debe cumplir con los requisitos de seguridad.<br>3. si el usuario desea cambiar la contraseña sin autenticarse primero , podra realizar otro proceso de autenticación el cual consiste en mandarle un codigo de seguridad por sms al celular registrado .<br>4. El sistema valida la contraseña nueva y si cumple con los requisitos , actualiza la contraseña y notifica el éxito de la operación. |
-| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Postcondiciones** | La contraseña se actualiza en el sistema y será requerida para el próximo inicio de sesión. |
+| **ID** | RF-04 |
+| **Nombre del requerimiento** | Cambio de contraseña — Usuario autenticado |
+| **Descripción** | El sistema debe permitir a un usuario autenticado cambiar su contraseña desde la sección **"Mi perfil"**, validando previamente su contraseña actual para comprobar que quien accede a la cuenta es la persona autorizada para hacerlo. |
+| **Precondiciones** | 1. El usuario debe tener una cuenta en el sistema.<br>2. El usuario debe estar autenticado en OficioYa.<br>3. El usuario debe encontrarse en la sección **"Mi perfil"** → opción **"Cambiar contraseña"**. |
+| **Actor** | Client/Worker/Administrator |
+| **Flujo principal** | 1. El usuario accede a **"Mi perfil"** desde el menú de navegación de OficioYa.<br>2. El usuario selecciona la opción **"Cambiar contraseña"**.<br>3. El usuario ingresa su contraseña actual.<br>4. El sistema verifica que la contraseña actual sea correcta; si no lo es, muestra el mensaje: *"La contraseña actual ingresada es incorrecta."*<br>5. El usuario ingresa la nueva contraseña y su confirmación.<br>6. El sistema valida que la nueva contraseña cumpla con la política de seguridad (RF-03) y que sea distinta a la contraseña actual; si no cumple, muestra el mensaje indicando qué requisito falla.<br>7. El sistema actualiza la contraseña, cierra la sesión del usuario en todos los dispositivos y muestra el mensaje: *"Tu contraseña ha sido actualizada exitosamente. Por favor inicia sesión nuevamente."*<br>8. El sistema redirige al usuario a la pantalla de inicio de sesión. |
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Cambio de contraseña - Usuario autenticado](../images/cambioContraseñaUsuarioAutenticado.png) |
+| **Postcondiciones** | La contraseña queda actualizada en el sistema, todas las sesiones activas son cerradas y el usuario debe iniciar sesión con la nueva contraseña. |
 
 ### 2.5 Requerimiento Funcional 5
 
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-05 |
-| **Nombre del requerimiento** | Asignación de roles |
-| **Descripción** | El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador,Contratante, Administrador). |
-| **Precondiciones** | El usuario debe existir en el dominio de usuarios. |
-| **Actor** | Sistema / Administrador |
-| **Flujo principal** | 1.1. Se registra un nuevo usuario .<br>1.2. Se le asignan los roles al usuario nuevo (puede ser trabajador y/o contratante).<br>1.3. El sistema asocia los roles seleccionados al ID del usuario en la base de datos. |
-| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Postcondiciones** | El usuario queda con los roles asignados, lo cual definirá sus permisos de acceso. |
+| **Nombre del requerimiento** | Recuperación de contraseña — Usuario no autenticado |
+| **Descripción** | El sistema debe permitir a un usuario no autenticado recuperar el acceso a su cuenta desde la **pantalla de inicio de sesión de OficioYa**, mediante el envío de un enlace de recuperación a su correo electrónico registrado. El enlace contiene un token de un solo uso con vigencia de 15 minutos. Al completarse el proceso, se invalidan todas las sesiones JWT existentes del usuario. |
+| **Precondiciones** | 1. El usuario debe tener una cuenta registrada en el sistema con un correo electrónico válido.<br>2. El usuario **no está autenticado** y se encuentra en la **pantalla de inicio de sesión de OficioYa**. |
+| **Actor** | Client/Worker/Administrator |
+| **Flujo principal** | 1. El usuario selecciona la opción **"¿Olvidaste tu contraseña?"** en la pantalla de inicio de sesión de OficioYa.<br>2. El usuario ingresa su correo electrónico registrado y envía la solicitud.<br>3. El sistema verifica si el correo existe; en cualquier caso muestra el mensaje genérico: *"Si el correo está registrado, recibirás un enlace de recuperación en los próximos minutos."* (no revela si el correo existe o no).<br>4. Si el correo existe, el sistema genera un token de un solo uso con vigencia de 15 minutos y un límite de 3 solicitudes por hora, y envía el enlace de recuperación al correo mediante **Spring Boot Mail**.<br>5. El usuario accede al enlace desde su correo.<br>6. El sistema valida que el token sea válido y no haya expirado; si expiró muestra: *"El enlace de recuperación ha expirado. Por favor solicita uno nuevo."*<br>7. El usuario ingresa y confirma su nueva contraseña.<br>8. El sistema valida que la nueva contraseña cumpla con la política de seguridad (RF-03); si no cumple, muestra el mensaje indicando qué requisito falla.<br>9. El sistema actualiza la contraseña, invalida todas las sesiones JWT activas e invalida el token de recuperación.<br>10. El sistema muestra el mensaje: *"Tu contraseña ha sido actualizada exitosamente."* y redirige al usuario a la pantalla de inicio de sesión. |
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Cambio de contraseña - Usuario no autenticado](../images/cambioContraseñaInicioSesion.png) |
+| **Postcondiciones** | La contraseña queda actualizada, todas las sesiones JWT existentes son invalidadas y el token de recuperación queda inutilizable. |
 
 ### 2.6 Requerimiento Funcional 6
 
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-06 |
-| **Nombre del requerimiento** | Restricción de acceso por rol |
-| **Descripción** | El sistema debe restringir el acceso a funcionalidades según el rol del usuario autenticado. |
-| **Precondiciones** | *No aplica (se apoya en la lógica de asignación de roles de RF-05 y el token de RF-07).* |
-| **Actor** | Sistema |
-| **Flujo principal** | 1. El usuario intenta acceder a una ruta protegida.<br>2. El sistema (API Gateway) verifica los roles en el token JWT.<br>3. Si el rol es insuficiente, rechaza la petición (403 Forbidden).<br>4. Si es correcto, permite la petición. |
-| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Postcondiciones** | el usuario accede a la ruta  |
+| **Nombre del requerimiento** | Asignación de roles |
+| **Descripción** | El sistema debe soportar la asignación de uno o varios roles a un mismo usuario (Trabajador, Contratante, Administrador) al momento de ser creado o posteriormente mediante el administrador. Los roles disponibles son: **Trabajador** (ofrece servicios), **Contratante** (solicita servicios) y **Administrador** (gestiona la plataforma, solo asignado por el equipo interno). |
+| **Precondiciones** | El usuario debe existir en el dominio de usuarios o estar en proceso de registro. |
+| **Actor** | Sistema / Administrador |
+| **Flujo principal** | **Escenario A – Usuario nuevo (durante el registro):**<br>1. El usuario accede a la pantalla de **registro de OficioYa**.<br>2. El sistema muestra los roles disponibles: **Trabajador** y **Contratante** (el rol Administrador no es seleccionable desde el registro público).<br>3. El usuario selecciona uno o ambos roles según su necesidad.<br>4. El usuario hace clic en el botón **"Aceptar"** para confirmar su selección.<br>5. El sistema asocia los roles seleccionados al ID del usuario en la base de datos.<br>6. El sistema muestra el mensaje de éxito: *"Roles asignados correctamente. ¡Bienvenido a OficioYa!"*<br>7. Si la asignación falla, el sistema muestra: *"No fue posible asignar los roles. Por favor inténtelo más tarde."*<br><br>**Escenario B – Asignación de rol Administrador (usuario existente):**<br>1. El equipo interno decide otorgar el rol de Administrador a un usuario de la plataforma.<br>2. El sistema envía un correo al usuario mediante **Spring Boot Mail** con un enlace de invitación.<br>3. El usuario abre el correo y hace clic en el botón **"Aceptar invitación"** incluido en el enlace.<br>4. El sistema redirige al usuario a una pantalla donde puede elegir usar su cuenta existente o crear una nueva.<br>5. El usuario confirma su elección haciendo clic en **"Confirmar"**.<br>6. El sistema actualiza el rol del usuario a Administrador en la base de datos y envía un correo de confirmación: *"Tu cuenta ahora tiene rol de Administrador en OficioYa."*<br>7. Si el enlace expiró o es inválido, el sistema muestra: *"El enlace de invitación no es válido o ha expirado. Contacta al equipo de soporte."*<br>8. Si la actualización falla, el sistema muestra: *"No fue posible asignar el rol. Por favor inténtelo más tarde."* |
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Asignacion de roles](../images/asignaciónRol.png) |
+| **Postcondiciones** | El usuario queda con los roles asignados y puede acceder a las funcionalidades que le corresponden según su rol. |
 
 ### 2.7 Requerimiento Funcional 7
 
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-07 |
-| **Nombre del requerimiento** | Generación de token JWT |
-| **Descripción** | Al autenticarse correctamente, el sistema debe generar un token JWT que incluya el id del usuario, sus roles y una fecha de expiración. |
-| **Precondiciones** | *No aplica (se activa automáticamente tras la precondición de éxito de RF-01).* |
+| **Nombre del requerimiento** | Restricción de acceso por rol |
+| **Descripción** | El sistema debe restringir el acceso a funcionalidades según el rol del usuario autenticado. |
+| **Precondiciones** | El usuario debe estar autenticado y tener al menos un rol asignado en el sistema. |
 | **Actor** | Sistema |
-| **Flujo principal** | 1. Credenciales validadas exitosamente.<br>2. El sistema crea el token JWT con los claims correspondientes.<br>3. El token es firmado y enviado al cliente en la respuesta. |
-| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Postcondiciones** 
+| **Flujo principal** | 1. El usuario intenta acceder a una ruta protegida.<br>2. El orquestador de la aplicación verifica los roles en el token JWT.<br>3. Si el rol es insuficiente, no debe mostrar la opción al usuario ni permitirle el acceso.<br>4. Si el rol es correcto, permite la petición y accede al recurso. |
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Restricción de acceso por rol](../images/restriccionAcceso.png) |
+| **Postcondiciones** | El usuario accede al recurso solicitado si su rol es suficiente, o recibe una respuesta de acceso denegado si no lo es. |
+
 ### 2.8 Requerimiento Funcional 8
 
 | Campo | Descripción |
 |------|-------------|
 | **ID** | RF-08 |
+| **Nombre del requerimiento** | Generación de token JWT |
+| **Descripción** | Al autenticarse correctamente, el sistema debe generar un token JWT que incluya el id del usuario, sus roles y una fecha de expiración. |
+| **Precondiciones** | El usuario ha sido autenticado exitosamente por el sistema (RF-01) con credenciales válidas. |
+| **Actor** | Sistema |
+| **Flujo principal** | 1. Las credenciales del usuario son validadas exitosamente.<br>2. El sistema construye el token JWT con los siguientes claims: **id del usuario**, **roles asignados** y **fecha de expiración** (30 minutos según RNF-05).<br>3. El token es firmado con la clave secreta del servidor.<br>4. El token firmado es enviado al cliente en la respuesta.<br>5. Si la generación del token falla, el sistema devuelve un error 500 y registra el evento en los logs (RNF-03). |
+| **Diagrama de caso de uso** | ![Diagrama de caso de uso - Generación de token JWT](../images/generacionJWT.png) |
+| **Postcondiciones** | El cliente recibe un token JWT válido y firmado que deberá incluir en las cabeceras de las peticiones subsiguientes para acceder a los recursos protegidos de OficioYa. |
+### 2.9 Requerimiento Funcional 9
+
+| Campo | Descripción |
+|------|-------------|
+| **ID** | RF-09 |
 | **Nombre del requerimiento** | Cifrado de contraseñas (Hash) |
 | **Descripción** | El sistema debe cifrar (hash) cualquier contraseña que gestione antes de persistirla o compararla. |
 | **Precondiciones** | *No aplica (parte integral de RF-01 y RF-03).* |
