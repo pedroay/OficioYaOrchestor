@@ -158,11 +158,11 @@ El sistema de OFICIOYA debe tener:
 |------|-------------|
 | **ID** | RF-09 |
 | **Nombre del requerimiento** | Cifrado de contraseñas (Hash) |
-| **Descripción** | El sistema debe cifrar (hash) cualquier contraseña que gestione antes de persistirla o compararla. |
+| **Descripción** | El sistema debe cifrar (hash la cual se pondra en un futuro sprint) cualquier contraseña que gestione antes de persistirla o compararla.(este requerimiento se trabajara mas a profundidad en un futuro sprint) |
 | **Precondiciones** | *No aplica (parte integral de RF-01 y RF-03).* |
 | **Actor** | Sistema |
 | **Flujo principal** | 1. El sistema recibe una contraseña en texto plano.<br>2. Se aplica la función de hash (ej. bcrypt).<br>3. La contraseña cifrada se almacena en base de datos o se compara con la existente. |
-| **Diagrama de caso de uso** | ![futura imagen ya que yo la pondre despues](../uml/futura_imagen.png) |
-| **Postcondiciones** | *No aplica.* |
+| **Diagrama de caso de uso** | ![futura imagen se pondra en un sprint mas adelantes](../uml/futura_imagen.png) |
+| **Postcondiciones** | la clave cifrada es guardada en la base de datos |
 
 
