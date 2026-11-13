@@ -1,4 +1,4 @@
-package eci.edu.dosw.identity.exception;
+package eci.edu.dosw.orchestrator.exception;
 
 /** Base de los errores de negocio del modulo Identity. */
 public abstract class IdentityException extends RuntimeException {

@@ -1,4 +1,4 @@
-package eci.edu.dosw.identity.exception;
+package eci.edu.dosw.orchestrator.exception;
 
 /** El servicio de Identity no responde, falló (5xx) o rechazó el token de servicio. */
 public class IdentityServiceUnavailableException extends RuntimeException {

@@ -1,4 +1,4 @@
-package eci.edu.dosw.identity.exception;
+package eci.edu.dosw.orchestrator.exception;
 
 /**
  * Excepción lanzada cuando el microservicio de Usuarios no responde o devuelve un error del servidor (5xx, conexión, etc.).

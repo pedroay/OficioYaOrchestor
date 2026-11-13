@@ -1,4 +1,4 @@
-package eci.edu.dosw.identity.config;
+package eci.edu.dosw.orchestrator.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

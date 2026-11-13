@@ -1,12 +1,12 @@
-package eci.edu.dosw.identity.controller;
+package eci.edu.dosw.orchestrator.controller;
 
-import eci.edu.dosw.identity.exception.AccountLockedException;
-import eci.edu.dosw.identity.exception.DuplicateUserException;
-import eci.edu.dosw.identity.exception.ForbiddenRoleException;
-import eci.edu.dosw.identity.exception.InvalidCredentialsException;
-import eci.edu.dosw.identity.exception.InvalidOtpException;
-import eci.edu.dosw.identity.exception.OtpRateLimitException;
-import eci.edu.dosw.identity.exception.WeakPasswordException;
+import eci.edu.dosw.orchestrator.exception.AccountLockedException;
+import eci.edu.dosw.orchestrator.exception.DuplicateUserException;
+import eci.edu.dosw.orchestrator.exception.ForbiddenRoleException;
+import eci.edu.dosw.orchestrator.exception.InvalidCredentialsException;
+import eci.edu.dosw.orchestrator.exception.InvalidOtpException;
+import eci.edu.dosw.orchestrator.exception.OtpRateLimitException;
+import eci.edu.dosw.orchestrator.exception.WeakPasswordException;
 import eci.edu.dosw.orchestrator.AuthOrchestrator;
 import eci.edu.dosw.orchestrator.dto.ChangePasswordRequest;
 import eci.edu.dosw.orchestrator.dto.ForgotPasswordRequest;

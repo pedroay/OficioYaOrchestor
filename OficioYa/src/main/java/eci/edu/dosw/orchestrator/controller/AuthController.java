@@ -1,4 +1,4 @@
-package eci.edu.dosw.identity.controller;
+package eci.edu.dosw.orchestrator.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
