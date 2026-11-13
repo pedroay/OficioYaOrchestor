@@ -1,87 +1,76 @@
 package eci.edu.dosw.security;
 
-import eci.edu.dosw.identity.model.Credential;
-import eci.edu.dosw.identity.repository.CredentialRepository;
-import eci.edu.dosw.identity.service.CredentialService;
-import eci.edu.dosw.identity.service.JwtProvider;
+import eci.edu.dosw.orchestrator.AuthOrchestrator;
+import eci.edu.dosw.orchestrator.dto.ChangePasswordRequest;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.io.Encoders;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import eci.edu.dosw.local.LocalUserService;
-import eci.edu.dosw.orchestrator.dto.PhoneDTO;
-import eci.edu.dosw.user.NewUser;
-import eci.edu.dosw.user.Role;
-import eci.edu.dosw.user.UserDto;
-import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Set;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.time.Clock;
+import javax.crypto.SecretKey;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Seguridad del gateway: valida los JWT que emite Identity (firma, vigencia, roles).
+ * Los tokens de usuario se firman aquí con el secreto de pruebas, igual que lo haría Identity.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class SecurityIntegrationTest {
 
-    private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
-    private static final String CLAVE = "Segura#Clave2026";
+    private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000042");
 
     @Autowired
     private MockMvc mvc;
     @Autowired
-    private JwtProvider jwtProvider;
-    @Autowired
-    private CredentialService credentialService;
-    @Autowired
-    private CredentialRepository credentialRepository;
-    @Autowired
-    private Clock clock;
+    private JwtService jwtService;
     @Value("${jwt.secret}")
     private String secret;
 
-    @Autowired
-    private LocalUserService localUserService;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @MockitoBean
+    private AuthOrchestrator authOrchestrator;
 
-    @BeforeEach
-    void preparar() {
-        credentialRepository.deleteAll();
-        credentialService.create(USER_ID, CLAVE);
-    }
-
-    @AfterEach
-    void limpiar() {
-        credentialRepository.deleteAll();
+    private static String emitir(String secretBase64, long vigenciaMs, String subject, List<String> roles) {
+        SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretBase64));
+        Instant ahora = Instant.now();
+        return Jwts.builder()
+                .subject(subject)
+                .claim("roles", roles)
+                .issuedAt(Date.from(ahora))
+                .expiration(Date.from(ahora.plusMillis(vigenciaMs)))
+                .signWith(key)
+                .compact();
     }
 
     private String token(String... roles) {
-        return jwtProvider.generateToken(USER_ID, List.of(roles));
+        return emitir(secret, 900_000L, USER_ID.toString(), List.of(roles));
     }
 
     private ResultActions get(String ruta, String token) throws Exception {
@@ -126,7 +115,7 @@ class SecurityIntegrationTest {
     // --- vencido ---
     @Test
     void tokenVencidoDevuelve401() throws Exception {
-        String vencido = new JwtProvider(secret, -1000L).generateToken(USER_ID, List.of("CONTRATANTE"));
+        String vencido = emitir(secret, -1000L, USER_ID.toString(), List.of("CONTRATANTE"));
         get("/api/probe", vencido).andExpect(status().isUnauthorized());
     }
 
@@ -134,7 +123,7 @@ class SecurityIntegrationTest {
     @Test
     void tokenFirmadoConOtraClaveDevuelve401() throws Exception {
         String otraClave = Encoders.BASE64.encode(Jwts.SIG.HS256.key().build().getEncoded());
-        String ajeno = new JwtProvider(otraClave, 1_800_000L).generateToken(USER_ID, List.of("ADMIN"));
+        String ajeno = emitir(otraClave, 900_000L, USER_ID.toString(), List.of("ADMIN"));
         get("/api/admin/probe", ajeno).andExpect(status().isUnauthorized());
     }
 
@@ -148,6 +137,18 @@ class SecurityIntegrationTest {
                 + Base64.getUrlEncoder().withoutPadding().encodeToString(alterado.getBytes(UTF_8))
                 + "." + partes[2];
         get("/api/admin/probe", falso).andExpect(status().isUnauthorized());
+    }
+
+    // --- el token de servicio es interno ---
+    @Test
+    void elTokenDeServicioNoAutenticaTraficoExterno() throws Exception {
+        get("/api/probe", jwtService.generateServiceToken()).andExpect(status().isUnauthorized());
+        get("/api/admin/probe", jwtService.generateServiceToken()).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void unTokenDeUsuarioConRolServicioNoGanaPrivilegios() throws Exception {
+        get("/api/admin/probe", token("SERVICE")).andExpect(status().isForbidden());
     }
 
     // --- roles (RF-07) ---
@@ -184,33 +185,6 @@ class SecurityIntegrationTest {
         get("/api/admin/probe", token("SUPERUSER")).andExpect(status().isForbidden());
     }
 
-    // --- contraseña cambiada ---
-    @Test
-    void unTokenEmitidoAntesDelCambioDeContrasenaDevuelve401() throws Exception {
-        String viejo = token("CONTRATANTE");
-        Credential c = credentialRepository.findByUserId(USER_ID).orElseThrow();
-        c.setPasswordChangedAt(LocalDateTime.now(clock).plusMinutes(5));
-        credentialRepository.save(c);
-        get("/api/probe", viejo).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void unTokenDelMismoSegundoDelCambioSigueValido() throws Exception {
-        String nuevo = token("CONTRATANTE");
-        Instant iat = jwtProvider.getIssuedAtFromToken(nuevo);
-        Credential c = credentialRepository.findByUserId(USER_ID).orElseThrow();
-        c.setPasswordChangedAt(LocalDateTime.ofInstant(iat, clock.getZone()).plusNanos(500_000_000));
-        credentialRepository.save(c);
-        get("/api/probe", nuevo).andExpect(status().isOk());
-    }
-
-    @Test
-    void unTokenDeUnUsuarioSinCredencialDevuelve401() throws Exception {
-        String t = token("CONTRATANTE");
-        credentialRepository.deleteAll();
-        get("/api/probe", t).andExpect(status().isUnauthorized());
-    }
-
     // --- rutas públicas ---
     @Test
     void lasRutasPublicasNoExigenToken() throws Exception {
@@ -232,7 +206,7 @@ class SecurityIntegrationTest {
 
     @Test
     void unTokenVencidoEnUnaRutaPublicaNoLaBloquea() throws Exception {
-        String vencido = new JwtProvider(secret, -1000L).generateToken(USER_ID, List.of("CONTRATANTE"));
+        String vencido = emitir(secret, -1000L, USER_ID.toString(), List.of("CONTRATANTE"));
         mvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/login")
                 .header("Authorization", "Bearer " + vencido))
                 .andExpect(result -> assertNotEquals(401, result.getResponse().getStatus()));
@@ -244,14 +218,6 @@ class SecurityIntegrationTest {
     }
 
     // --- cambio de contraseña: el id sale del token, no de la URL ---
-    private UserDto crearUsuarioConCredencial(String clave) {
-        UserDto usuario = localUserService.createProfile(
-                new NewUser("Prueba", UUID.randomUUID() + "@test.com",
-                        List.of(new PhoneDTO("+573001234567", true)), List.of("CONTRATANTE")));
-        credentialService.create(usuario.id(), usuario.email(), clave);
-        return usuario;
-    }
-
     @Test
     void cambiarContrasenaSinTokenDevuelve401() throws Exception {
         mvc.perform(MockMvcRequestBuilders.put("/api/v1/auth/change")
@@ -261,27 +227,17 @@ class SecurityIntegrationTest {
     }
 
     @Test
-    void cambiarContrasenaIgnoraElUserIdDeLaUrl() throws Exception {
-        credentialRepository.deleteAll();
-        String claveVictima = "Victima#Clave2026";
-        UserDto atacante = crearUsuarioConCredencial(CLAVE);
-        UserDto victima = crearUsuarioConCredencial(claveVictima);
-        String tokenAtacante = jwtProvider.generateToken(atacante.id(), List.of("CONTRATANTE"));
+    void cambiarContrasenaUsaElIdDelTokenYNoElDeLaUrl() throws Exception {
+        UUID victima = UUID.randomUUID();
 
         mvc.perform(MockMvcRequestBuilders.put("/api/v1/auth/change")
-                .param("userId", String.valueOf(victima.id()))
-                .header("Authorization", "Bearer " + tokenAtacante)
+                .param("userId", victima.toString())
+                .header("Authorization", "Bearer " + token("CONTRATANTE"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"currentPassword\":\"" + CLAVE
-                        + "\",\"newPassword\":\"Nueva#Clave2026X\"}"))
+                .content("{\"currentPassword\":\"Actual#Clave2026\",\"newPassword\":\"Nueva#Clave2026X\"}"))
                 .andExpect(status().isOk());
 
-        String hashVictima = credentialRepository.findByUserId(victima.id()).orElseThrow().getPasswordHash();
-        String hashAtacante = credentialRepository.findByUserId(atacante.id()).orElseThrow().getPasswordHash();
-        assertTrue(passwordEncoder.matches(claveVictima, hashVictima));
-        assertTrue(passwordEncoder.matches("Nueva#Clave2026X", hashAtacante));
-
-        localUserService.deleteProfile(atacante.id());
-        localUserService.deleteProfile(victima.id());
+        verify(authOrchestrator).changePassword(eq(USER_ID), any(ChangePasswordRequest.class));
+        verify(authOrchestrator, never()).changePassword(eq(victima), any(ChangePasswordRequest.class));
     }
 }
