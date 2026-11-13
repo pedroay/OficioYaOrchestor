@@ -115,7 +115,7 @@
                         <exclude>eci/edu/dosw/**/dto/**</exclude>
                         <exclude>eci/edu/dosw/user/NewUser.class</exclude>
                         <exclude>eci/edu/dosw/user/UserDto.class</exclude>
-                        <exclude>eci/edu/dosw/identity/controller/ErrorResponse.class</exclude>
+                        <exclude>eci/edu/dosw/orchestrator/controller/ErrorResponse.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

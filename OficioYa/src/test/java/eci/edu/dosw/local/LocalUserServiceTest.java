@@ -1,6 +1,6 @@
 package eci.edu.dosw.local;
 
-import eci.edu.dosw.identity.exception.DuplicateUserException;
+import eci.edu.dosw.orchestrator.exception.DuplicateUserException;
 import eci.edu.dosw.orchestrator.dto.PhoneDTO;
 import eci.edu.dosw.user.NewUser;
 import eci.edu.dosw.user.UserDto;

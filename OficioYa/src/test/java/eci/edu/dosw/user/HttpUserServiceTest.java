@@ -1,7 +1,7 @@
 package eci.edu.dosw.user;
 
-import eci.edu.dosw.identity.exception.DuplicateUserException;
-import eci.edu.dosw.identity.exception.UsersServiceUnavailableException;
+import eci.edu.dosw.orchestrator.exception.DuplicateUserException;
+import eci.edu.dosw.orchestrator.exception.UsersServiceUnavailableException;
 import eci.edu.dosw.security.JwtService;
 import eci.edu.dosw.orchestrator.dto.PhoneDTO;
 import org.junit.jupiter.api.BeforeEach;

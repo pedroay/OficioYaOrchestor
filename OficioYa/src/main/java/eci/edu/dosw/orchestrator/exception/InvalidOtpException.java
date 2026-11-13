@@ -1,4 +1,4 @@
-package eci.edu.dosw.identity.exception;
+package eci.edu.dosw.orchestrator.exception;
 
 public class InvalidOtpException extends IdentityException {
 

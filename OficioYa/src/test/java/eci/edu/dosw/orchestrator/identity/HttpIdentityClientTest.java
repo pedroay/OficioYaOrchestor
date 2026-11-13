@@ -1,12 +1,12 @@
 package eci.edu.dosw.orchestrator.identity;
 
-import eci.edu.dosw.identity.exception.AccountLockedException;
-import eci.edu.dosw.identity.exception.DuplicateUserException;
-import eci.edu.dosw.identity.exception.IdentityServiceUnavailableException;
-import eci.edu.dosw.identity.exception.InvalidCredentialsException;
-import eci.edu.dosw.identity.exception.OtpRateLimitException;
-import eci.edu.dosw.identity.exception.UserNotFoundException;
-import eci.edu.dosw.identity.exception.WeakPasswordException;
+import eci.edu.dosw.orchestrator.exception.AccountLockedException;
+import eci.edu.dosw.orchestrator.exception.DuplicateUserException;
+import eci.edu.dosw.orchestrator.exception.IdentityServiceUnavailableException;
+import eci.edu.dosw.orchestrator.exception.InvalidCredentialsException;
+import eci.edu.dosw.orchestrator.exception.OtpRateLimitException;
+import eci.edu.dosw.orchestrator.exception.UserNotFoundException;
+import eci.edu.dosw.orchestrator.exception.WeakPasswordException;
 import eci.edu.dosw.orchestrator.identity.IdentityDtos.OtpResult;
 import eci.edu.dosw.orchestrator.identity.IdentityDtos.TokenResult;
 import eci.edu.dosw.security.JwtService;

@@ -1,12 +1,12 @@
 package eci.edu.dosw.orchestrator;
 
-import eci.edu.dosw.identity.exception.AccountInactiveException;
-import eci.edu.dosw.identity.exception.DuplicateUserException;
-import eci.edu.dosw.identity.exception.ForbiddenRoleException;
-import eci.edu.dosw.identity.exception.InvalidCredentialsException;
-import eci.edu.dosw.identity.exception.InvalidOtpException;
-import eci.edu.dosw.identity.exception.OtpRateLimitException;
-import eci.edu.dosw.identity.exception.UserNotFoundException;
+import eci.edu.dosw.orchestrator.exception.AccountInactiveException;
+import eci.edu.dosw.orchestrator.exception.DuplicateUserException;
+import eci.edu.dosw.orchestrator.exception.ForbiddenRoleException;
+import eci.edu.dosw.orchestrator.exception.InvalidCredentialsException;
+import eci.edu.dosw.orchestrator.exception.InvalidOtpException;
+import eci.edu.dosw.orchestrator.exception.OtpRateLimitException;
+import eci.edu.dosw.orchestrator.exception.UserNotFoundException;
 import eci.edu.dosw.notification.NotificationService;
 import eci.edu.dosw.orchestrator.dto.ChangePasswordRequest;
 import eci.edu.dosw.orchestrator.dto.ForgotPasswordRequest;

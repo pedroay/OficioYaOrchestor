@@ -2,8 +2,8 @@ package eci.edu.dosw.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eci.edu.dosw.identity.exception.DuplicateUserException;
-import eci.edu.dosw.identity.exception.UsersServiceUnavailableException;
+import eci.edu.dosw.orchestrator.exception.DuplicateUserException;
+import eci.edu.dosw.orchestrator.exception.UsersServiceUnavailableException;
 import eci.edu.dosw.security.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

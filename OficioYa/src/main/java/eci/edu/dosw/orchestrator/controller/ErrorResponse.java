@@ -1,4 +1,4 @@
-package eci.edu.dosw.identity.controller;
+package eci.edu.dosw.orchestrator.controller;
 
 /**
  * Standardized Data Transfer Object (DTO) for API error responses.
