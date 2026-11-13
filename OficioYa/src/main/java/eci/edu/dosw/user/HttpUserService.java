@@ -27,7 +27,7 @@ import java.util.UUID;
  */
 @Service
 @Primary
-@Profile("!test")
+@Profile("!test & !local")
 public class HttpUserService implements UserService {
 
     private static final Logger log = LoggerFactory.getLogger(HttpUserService.class);
