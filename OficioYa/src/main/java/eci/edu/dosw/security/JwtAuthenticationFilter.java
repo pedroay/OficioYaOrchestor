@@ -1,14 +1,12 @@
 package eci.edu.dosw.security;
 
-import eci.edu.dosw.identity.service.CredentialService;
-import eci.edu.dosw.identity.service.JwtProvider;
-import eci.edu.dosw.user.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import eci.edu.dosw.user.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,15 +27,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private static final String PREFIX = "Bearer ";
-    private static final Set<String> ROLES_VALIDOS =
-            Arrays.stream(Role.values()).map(Role::name).collect(Collectors.toSet());
+    // SERVICE se excluye: el token de servicio es interno y nunca debe autenticar tráfico externo.
+    private static final Set<String> ROLES_VALIDOS = Arrays.stream(Role.values())
+            .map(Role::name)
+            .filter(nombre -> !nombre.equals("SERVICE"))
+            .collect(Collectors.toSet());
 
-    private final JwtProvider jwtProvider;
-    private final CredentialService credentialService;
+    private final JwtService jwtService;
 
-    public JwtAuthenticationFilter(JwtProvider jwtProvider, CredentialService credentialService) {
-        this.jwtProvider = jwtProvider;
-        this.credentialService = credentialService;
+    public JwtAuthenticationFilter(JwtService jwtService) {
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -53,22 +51,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void autenticar(String token) {
         try {
-            Claims claims = jwtProvider.parse(token);
-            Date emitido = claims.getIssuedAt();
-            if (emitido == null) {
-                return;
-            }
+            Claims claims = jwtService.parse(token);
             String subject = claims.getSubject();
-            if (subject == null) {
-                return;
-            }
-            java.util.UUID userId = null;
-            try {
-                userId = java.util.UUID.fromString(subject);
-            } catch (IllegalArgumentException ignored) {
-            }
-
-            if (userId != null && credentialService.wasIssuedBeforePasswordChange(userId, emitido.toInstant())) {
+            if (subject == null || claims.getIssuedAt() == null
+                    || JwtService.SERVICE_SUBJECT.equals(subject)) {
                 return;
             }
             SecurityContextHolder.getContext().setAuthentication(
