@@ -2,7 +2,7 @@ package eci.edu.dosw.user;
 
 import eci.edu.dosw.identity.exception.DuplicateUserException;
 import eci.edu.dosw.identity.exception.UsersServiceUnavailableException;
-import eci.edu.dosw.identity.service.JwtProvider;
+import eci.edu.dosw.security.JwtService;
 import eci.edu.dosw.orchestrator.dto.PhoneDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,20 +24,20 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 class HttpUserServiceTest {
 
-    private JwtProvider jwtProvider;
+    private JwtService jwtService;
     private MockRestServiceServer mockServer;
     private HttpUserService httpUserService;
 
     @BeforeEach
     void setUp() {
-        jwtProvider = mock(JwtProvider.class);
-        when(jwtProvider.generateServiceToken()).thenReturn("mock-service-token");
+        jwtService = mock(JwtService.class);
+        when(jwtService.generateServiceToken()).thenReturn("mock-service-token");
 
         RestClient.Builder builder = RestClient.builder().baseUrl("http://localhost:8080");
         mockServer = MockRestServiceServer.bindTo(builder).build();
         RestClient restClient = builder.build();
 
-        httpUserService = new HttpUserService(restClient, jwtProvider);
+        httpUserService = new HttpUserService(restClient, jwtService);
     }
 
     @Test

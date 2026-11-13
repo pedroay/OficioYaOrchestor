@@ -7,10 +7,6 @@ import eci.edu.dosw.identity.exception.InvalidCredentialsException;
 import eci.edu.dosw.identity.exception.InvalidOtpException;
 import eci.edu.dosw.identity.exception.OtpRateLimitException;
 import eci.edu.dosw.identity.exception.UserNotFoundException;
-import eci.edu.dosw.identity.service.CredentialService;
-import eci.edu.dosw.identity.service.JwtProvider;
-import eci.edu.dosw.identity.service.OtpService;
-import eci.edu.dosw.identity.service.PasswordPolicyService;
 import eci.edu.dosw.notification.NotificationService;
 import eci.edu.dosw.orchestrator.dto.ChangePasswordRequest;
 import eci.edu.dosw.orchestrator.dto.ForgotPasswordRequest;
@@ -18,6 +14,9 @@ import eci.edu.dosw.orchestrator.dto.LoginRequest;
 import eci.edu.dosw.orchestrator.dto.LoginResponse;
 import eci.edu.dosw.orchestrator.dto.RegisterRequest;
 import eci.edu.dosw.orchestrator.dto.ResetPasswordRequest;
+import eci.edu.dosw.orchestrator.identity.IdentityClient;
+import eci.edu.dosw.orchestrator.identity.IdentityDtos.OtpResult;
+import eci.edu.dosw.orchestrator.identity.IdentityDtos.TokenResult;
 import eci.edu.dosw.user.NewUser;
 import eci.edu.dosw.user.UserDto;
 import eci.edu.dosw.user.UserService;
@@ -29,8 +28,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Coordinates authentication and identity workflows across the User, Identity, and Notification modules
- * (OR-01 through OR-03).
+ * Coordina los flujos de autenticación entre Users, Identity y Notification (OR-01 a OR-03).
+ * Identity solo autentica: el orquestador es quien conoce los perfiles de usuario.
+ * El registro es una saga: perfil en Users, luego credencial en Identity, con compensación
+ * (borrar el perfil) si la credencial no se puede crear.
  */
 @Service
 public class AuthOrchestrator {
@@ -39,28 +40,19 @@ public class AuthOrchestrator {
 
     private final UserService userService;
     private final NotificationService notificationService;
-    private final CredentialService credentialService;
-    private final OtpService otpService;
-    private final PasswordPolicyService passwordPolicy;
-    private final JwtProvider jwtProvider;
+    private final IdentityClient identityClient;
 
     public AuthOrchestrator(UserService userService,
             NotificationService notificationService,
-            CredentialService credentialService,
-            OtpService otpService,
-            PasswordPolicyService passwordPolicy,
-            JwtProvider jwtProvider) {
+            IdentityClient identityClient) {
         this.userService = userService;
         this.notificationService = notificationService;
-        this.credentialService = credentialService;
-        this.otpService = otpService;
-        this.passwordPolicy = passwordPolicy;
-        this.jwtProvider = jwtProvider;
+        this.identityClient = identityClient;
     }
 
     /**
-     * Authenticates a user: locates the user profile in the User domain, verifies that the account
-     * is active, validates credentials via the Identity module, and issues a signed JWT.
+     * Autentica a un usuario: busca su perfil en Users, verifica que la cuenta esté activa,
+     * y pide a Identity validar la contraseña y emitir el JWT con los roles del perfil.
      */
     public LoginResponse login(LoginRequest request) {
         UserDto user = userService.findByEmail(request.email())
@@ -72,17 +64,14 @@ public class AuthOrchestrator {
             throw new AccountInactiveException("La cuenta se encuentra inactiva o bloqueada.");
         }
 
-        credentialService.authenticate(user.id(), request.password());
-
-        String token = jwtProvider.generateToken(user.id(), user.roles());
+        TokenResult token = identityClient.login(user.id(), request.password(), user.roles());
         log.info("Inicio de sesión exitoso para userId={}", user.id());
-        return new LoginResponse(token, jwtProvider.getExpirationSeconds(), user.id(), user.roles());
+        return new LoginResponse(token.token(), token.expiresIn(), user.id(), user.roles());
     }
 
     /**
-     * Registers a new user: validates all pre-conditions before creating any entities, creates the user
-     * profile in the User domain, and persists credentials in the Identity domain.
-     * If credential creation fails, an automated compensating transaction deletes the created profile in Users.
+     * Registra un usuario (saga). Valida todo antes de crear nada, crea el perfil en Users y
+     * la credencial en Identity. Si la credencial falla, borra el perfil creado.
      */
     public UserDto register(RegisterRequest request) {
         if (request.roles() != null) {
@@ -93,7 +82,7 @@ public class AuthOrchestrator {
             }
         }
 
-        passwordPolicy.validate(request.password());
+        identityClient.validatePassword(request.password());
 
         if (userService.findByEmail(request.email()).isPresent()) {
             throw new DuplicateUserException();
@@ -103,7 +92,7 @@ public class AuthOrchestrator {
                 new NewUser(request.name(), request.email(), request.phones(), request.roles()));
 
         try {
-            credentialService.create(creado.id(), creado.email(), request.password());
+            identityClient.createCredential(creado.id(), creado.email(), request.password());
             log.info("Usuario registrado exitosamente con userId={}", creado.id());
         } catch (RuntimeException e) {
             deshacerPerfil(creado.id(), e);
@@ -113,51 +102,42 @@ public class AuthOrchestrator {
         return creado;
     }
 
-    /**
-     * Changes the password of an authenticated user.
-     */
+    /** Cambia la contraseña de un usuario autenticado. */
     public void changePassword(UUID userId, ChangePasswordRequest request) {
         UserDto user = userService.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        credentialService.changePassword(userId, request.currentPassword(), request.newPassword());
+        identityClient.changePassword(userId, request.currentPassword(), request.newPassword());
         log.info("Contraseña actualizada exitosamente para userId={}", userId);
 
         avisarCambioDeContrasena(user.email());
     }
 
-    /**
-     * Initiates the forgotten password workflow.
-     */
+    /** Inicia el flujo de contraseña olvidada. La respuesta es siempre genérica. */
     public void forgotPassword(ForgotPasswordRequest request) {
         Optional<UserDto> user = userService.findByEmail(request.email()).filter(UserDto::isActive);
         if (user.isEmpty()) {
             return;
         }
         try {
-            String code = otpService.generate(user.get().id());
-            notificationService.sendPasswordResetCode(user.get().email(), code, OtpService.VALID_MINUTES);
+            OtpResult otp = identityClient.generateOtp(user.get().id());
+            notificationService.sendPasswordResetCode(user.get().email(), otp.code(), otp.validMinutes());
             log.info("Código OTP de restablecimiento generado y enviado para userId={}", user.get().id());
         } catch (UserNotFoundException | OtpRateLimitException e) {
             log.warn("Solicitud de código no atendida para userId={}: {}", user.get().id(), e.getMessage());
         }
     }
 
-    /**
-     * Resets a user's password using a verified OTP.
-     */
+    /** Restablece la contraseña usando un OTP verificado por Identity. */
     public void resetPassword(ResetPasswordRequest request) {
         UserDto user = userService.findByEmail(request.email())
                 .filter(UserDto::isActive)
                 .orElseThrow(InvalidOtpException::new);
 
         try {
-            credentialService.validateNewPassword(user.id(), request.newPassword());
+            identityClient.resetPassword(user.id(), request.code(), request.newPassword());
         } catch (UserNotFoundException e) {
             throw new InvalidOtpException();
         }
-
-        otpService.verifyAndConsume(user.id(), request.code());
-        credentialService.resetPassword(user.id(), request.newPassword());
         log.info("Contraseña restablecida exitosamente para userId={}", user.id());
 
         avisarCambioDeContrasena(user.email());

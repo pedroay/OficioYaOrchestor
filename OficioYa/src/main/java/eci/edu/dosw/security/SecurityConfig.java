@@ -1,7 +1,5 @@
 package eci.edu.dosw.security;
 
-import eci.edu.dosw.identity.service.CredentialService;
-import eci.edu.dosw.identity.service.JwtProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,8 +17,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, JwtProvider jwtProvider,
-            CredentialService credentialService, RestAuthenticationEntryPoint entryPoint,
+    SecurityFilterChain filterChain(HttpSecurity http, JwtService jwtService,
+            RestAuthenticationEntryPoint entryPoint,
             RestAccessDeniedHandler deniedHandler,
             CorsConfigurationSource corsConfigurationSource) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -41,7 +39,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/worker/**", "/api/worker/**").hasRole("TRABAJADOR")
                 .requestMatchers("/api/v1/users/**", "/api/v1/zones/**").authenticated()
                 .anyRequest().authenticated())
-            .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, credentialService),
+            .addFilterBefore(new JwtAuthenticationFilter(jwtService),
                 UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

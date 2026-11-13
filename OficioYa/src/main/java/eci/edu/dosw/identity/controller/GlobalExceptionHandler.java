@@ -4,6 +4,7 @@ import eci.edu.dosw.identity.exception.AccountInactiveException;
 import eci.edu.dosw.identity.exception.AccountLockedException;
 import eci.edu.dosw.identity.exception.DuplicateUserException;
 import eci.edu.dosw.identity.exception.ForbiddenRoleException;
+import eci.edu.dosw.identity.exception.IdentityServiceUnavailableException;
 import eci.edu.dosw.identity.exception.InvalidCredentialsException;
 import eci.edu.dosw.identity.exception.InvalidOtpException;
 import eci.edu.dosw.identity.exception.OtpRateLimitException;
@@ -102,7 +103,12 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler(IdentityServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleIdentityUnavailable(IdentityServiceUnavailableException ex) {
+        log.error("Servicio de identidad no disponible: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String msg = ex.getBindingResult().getFieldErrors().stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
