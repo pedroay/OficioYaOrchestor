@@ -1,6 +1,11 @@
 spring:
   application:
     name: oficioya
+  servlet:
+    multipart:
+      enabled: false
+      max-file-size: 5MB
+      max-request-size: 20MB
 
 server:
   port: ${PORT:8081}
@@ -8,6 +13,10 @@ server:
 users:
   service:
     url: ${USERS_SERVICE_URL:http://localhost:8080}
+
+images:
+  service:
+    url: ${IMAGES_SERVICE_URL:http://localhost:8083}
 
 identity:
   service:

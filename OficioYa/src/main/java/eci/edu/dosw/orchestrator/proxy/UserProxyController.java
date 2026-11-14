@@ -3,6 +3,7 @@ package eci.edu.dosw.orchestrator.proxy;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,9 +20,10 @@ import java.util.Enumeration;
 
 /**
  * Controlador Proxy / Gateway en el Orquestador.
- * Reenvía todas las peticiones hacia /api/v1/users/**, /api/v1/admin/** y /api/v1/zones/**
- * al microservicio de Usuarios (${users.service.url}), preservando método HTTP, ruta,
- * query params, payload y cabeceras de autorización.
+ * Reenvía las peticiones hacia:
+ * - /api/v1/users/**, /api/v1/admin/** y /api/v1/zones/** -> microservicio de Usuarios (${users.service.url})
+ * - /api/v1/images/** -> microservicio de Imágenes (${images.service.url})
+ * preservando método HTTP, ruta, query params, payload binario/multipart y cabeceras.
  */
 @RestController
 public class UserProxyController {
@@ -29,17 +31,27 @@ public class UserProxyController {
     private static final Logger log = LoggerFactory.getLogger(UserProxyController.class);
 
     private final String usersServiceUrl;
+    private final String imagesServiceUrl;
     private final RestClient restClient;
 
-    public UserProxyController(@Value("${users.service.url:http://localhost:8080}") String usersServiceUrl) {
+    public UserProxyController(String usersServiceUrl) {
+        this(usersServiceUrl, "http://localhost:8083");
+    }
+
+    @Autowired
+    public UserProxyController(
+            @Value("${users.service.url:http://localhost:8080}") String usersServiceUrl,
+            @Value("${images.service.url:http://localhost:8083}") String imagesServiceUrl) {
         this.usersServiceUrl = usersServiceUrl.replaceAll("/+$", "");
+        this.imagesServiceUrl = imagesServiceUrl.replaceAll("/+$", "");
         this.restClient = RestClient.builder().build();
     }
 
     @RequestMapping(value = {
             "/api/v1/users/**",
             "/api/v1/admin/**",
-            "/api/v1/zones/**"
+            "/api/v1/zones/**",
+            "/api/v1/images/**"
     })
     public ResponseEntity<byte[]> proxy(
             HttpServletRequest request,
@@ -47,7 +59,8 @@ public class UserProxyController {
 
         String path = request.getRequestURI();
         String query = request.getQueryString();
-        String targetUrl = usersServiceUrl + path + (query != null ? "?" + query : "");
+        String baseUrl = path.startsWith("/api/v1/images") ? imagesServiceUrl : usersServiceUrl;
+        String targetUrl = baseUrl + path + (query != null ? "?" + query : "");
         HttpMethod method = HttpMethod.valueOf(request.getMethod());
 
         log.info("Proxy gateway reenvía: {} {} -> {}", method, path, targetUrl);
@@ -64,12 +77,17 @@ public class UserProxyController {
         }
 
         try {
+            byte[] payload = body;
+            if ((payload == null || payload.length == 0) && request.getContentLengthLong() > 0) {
+                payload = request.getInputStream().readAllBytes();
+            }
+
             var spec = restClient.method(method)
                     .uri(URI.create(targetUrl))
                     .headers(h -> h.addAll(headers));
 
-            if (body != null && body.length > 0) {
-                spec.body(body);
+            if (payload != null && payload.length > 0) {
+                spec.body(payload);
             }
 
             return spec.exchange((clientRequest, clientResponse) -> {
@@ -94,4 +112,3 @@ public class UserProxyController {
         }
     }
 }
-
