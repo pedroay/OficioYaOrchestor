@@ -1,12 +1,8 @@
 package eci.edu.dosw.orchestrator.proxy;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
-
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -40,5 +36,18 @@ class UserProxyControllerTest {
 
         assertEquals(502, response.getStatusCode().value());
     }
-}
 
+    @Test
+    void proxyEnrutaImagenesYExtraeBodyDesdeInputStreamCuandoBodyEsNull() {
+        UserProxyController controller = new UserProxyController("http://localhost:59998/", "http://localhost:59999/");
+
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/images");
+        request.setContentType("multipart/form-data; boundary=---abc");
+        request.setContent("binary-image-data".getBytes());
+
+        ResponseEntity<byte[]> response = controller.proxy(request, null);
+
+        assertEquals(502, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+    }
+}
